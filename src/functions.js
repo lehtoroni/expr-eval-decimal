@@ -1,23 +1,24 @@
+import Decimal from 'decimal.js';
 import contains from './contains';
 
 export function add(a, b) {
-  return Number(a) + Number(b);
+  return new Decimal(a).add(new Decimal(b)).toNumber();
 }
 
 export function sub(a, b) {
-  return a - b;
+  return new Decimal(a).sub(new Decimal(b)).toNumber();
 }
 
 export function mul(a, b) {
-  return a * b;
+  return new Decimal(a).mul(new Decimal(b)).toNumber();
 }
 
 export function div(a, b) {
-  return a / b;
+  return new Decimal(a).div(new Decimal(b)).toNumber();
 }
 
 export function mod(a, b) {
-  return a % b;
+  return new Decimal(a).mod(new Decimal(b)).toNumber();
 }
 
 export function concat(a, b) {
@@ -36,19 +37,19 @@ export function notEqual(a, b) {
 }
 
 export function greaterThan(a, b) {
-  return a > b;
+  return new Decimal(a).greaterThan(new Decimal(b));
 }
 
 export function lessThan(a, b) {
-  return a < b;
+  return new Decimal(a).lessThan(new Decimal(b));
 }
 
 export function greaterThanEqual(a, b) {
-  return a >= b;
+  return new Decimal(a).greaterThanOrEqualTo(new Decimal(b));
 }
 
 export function lessThanEqual(a, b) {
-  return a <= b;
+  return new Decimal(a).lessThanOrEqualTo(new Decimal(b));
 }
 
 export function andOperator(a, b) {
@@ -64,38 +65,38 @@ export function inOperator(a, b) {
 }
 
 export function sinh(a) {
-  return ((Math.exp(a) - Math.exp(-a)) / 2);
+  return new Decimal(a).sinh().toNumber();
 }
 
 export function cosh(a) {
-  return ((Math.exp(a) + Math.exp(-a)) / 2);
+  return new Decimal(a).cosh().toNumber();
 }
 
 export function tanh(a) {
   if (a === Infinity) return 1;
   if (a === -Infinity) return -1;
-  return (Math.exp(a) - Math.exp(-a)) / (Math.exp(a) + Math.exp(-a));
+  return new Decimal(a).tanh().toNumber();
 }
 
 export function asinh(a) {
   if (a === -Infinity) return a;
-  return Math.log(a + Math.sqrt((a * a) + 1));
+  return new Decimal(a).asinh().toNumber();
 }
 
 export function acosh(a) {
-  return Math.log(a + Math.sqrt((a * a) - 1));
+  return new Decimal(a).acosh().toNumber();
 }
 
 export function atanh(a) {
-  return (Math.log((1 + a) / (1 - a)) / 2);
+  return new Decimal(a).atanh().toNumber();
 }
 
 export function log10(a) {
-  return Math.log(a) * Math.LOG10E;
+  return new Decimal(a).log(10).toNumber();
 }
 
 export function neg(a) {
-  return -a;
+  return new Decimal(a).mul(-1).toNumber();
 }
 
 export function not(a) {
@@ -103,11 +104,11 @@ export function not(a) {
 }
 
 export function trunc(a) {
-  return a < 0 ? Math.ceil(a) : Math.floor(a);
+  return new Decimal(a).trunc().toNumber();
 }
 
 export function random(a) {
-  return Math.random() * (a || 1);
+  return new Decimal(Math.random() * (a || 1)).toNumber();
 }
 
 export function factorial(a) { // a!
@@ -131,7 +132,6 @@ var GAMMA_P = [
   0.36899182659531622704e-5
 ];
 
-// Gamma function from math.js
 export function gamma(n) {
   var t, x;
 
@@ -187,6 +187,8 @@ export function gamma(n) {
   return Math.sqrt(2 * Math.PI) * Math.pow(t, n + 0.5) * Math.exp(-t) * x;
 }
 
+
+
 export function stringOrArrayLength(s) {
   if (Array.isArray(s)) {
     return s.length;
@@ -194,24 +196,27 @@ export function stringOrArrayLength(s) {
   return String(s).length;
 }
 
-export function hypot() {
-  var sum = 0;
-  var larg = 0;
-  for (var i = 0; i < arguments.length; i++) {
-    var arg = Math.abs(arguments[i]);
-    var div;
-    if (larg < arg) {
-      div = larg / arg;
-      sum = (sum * div * div) + 1;
-      larg = arg;
-    } else if (arg > 0) {
-      div = arg / larg;
-      sum += div * div;
+export function hypot(...args) {
+  let sum = new Decimal(0);
+  let larg = new Decimal(0);
+  
+  for (const arg of args) {
+    const absArg = new Decimal(arg).abs();
+    let div;
+    
+    if (larg.lt(absArg)) {
+      div = larg.div(absArg);
+      sum = sum.times(div.times(div)).plus(1);
+      larg = absArg;
+    } else if (!absArg.isZero()) {
+      div = absArg.div(larg);
+      sum = sum.plus(div.times(div));
     } else {
-      sum += arg;
+      sum = sum.plus(absArg);
     }
   }
-  return larg === Infinity ? Infinity : larg * Math.sqrt(sum);
+  
+  return larg.eq(Infinity) ? Infinity : larg.times(sum.sqrt());
 }
 
 export function condition(cond, yep, nope) {

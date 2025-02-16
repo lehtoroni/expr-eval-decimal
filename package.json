@@ -8,7 +8,9 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
+  "dependencies": {
+    "decimal.js": "^10.5.0"
+  },
   "devDependencies": {
     "eslint": "^6.3.0",
     "eslint-config-semistandard": "^15.0.0",
